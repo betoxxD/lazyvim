@@ -10,9 +10,38 @@ vim.keymap.set(
 )
 
 -- Compile and run C/C++ code in a split terminal
+
 vim.keymap.set("n", "<leader>fw", function()
-  vim.cmd("w")
-  vim.cmd("split | terminal g++ -std=c++17 -Wall -Wextra -O2 -o %:r % && ./" .. vim.fn.expand("%:r"))
+  vim.cmd("w") -- Guarda el archivo antes de compilar
+
+  -- Obtiene la extensión del archivo actual
+  local ext = vim.fn.expand("%:e") -- %:e obtiene la extensión (c o cpp)
+  local compiler, std_flag
+
+  if ext == "c" then
+    compiler = "gcc"
+    std_flag = "-std=c11"
+  else
+    compiler = "g++"
+    std_flag = "-std=c++17"
+  end
+
+  -- Obtiene la ruta base del archivo y el nombre del ejecutable
+  local filepath = vim.fn.expand("%:p") -- Ruta absoluta del archivo fuente
+  local output = vim.fn.expand("%:p:r") -- Ruta absoluta del ejecutable sin extensión
+
+  -- Construye el comando
+  local cmd = string.format(
+    'split | terminal %s %s -Wall -Wextra -O2 -o "%s" "%s" && "%s"',
+    compiler,
+    std_flag,
+    output,
+    filepath,
+    output
+  )
+
+  -- Ejecuta el comando
+  vim.cmd(cmd)
 end, { noremap = true, silent = true, desc = "Compile and run C/C++ code" })
 
 -- Move the current line up or down
